@@ -74,11 +74,11 @@ if [ "${action}" == "pause" ]; then
     ${_exec} sed -i 's[#unix_sock_dir = "/run/libvirt"[unix_sock_dir = "/var/run/libvirtt"[' /etc/libvirt/libvirtd.conf 
     LIBVIRT_PID=$(${_exec} bash -c 'pidof -s libvirtd')
     ${_exec} kill ${LIBVIRT_PID}
-    _virsh="${_exec} virsh -c qemu+unix:///system?socket=/var/run/libvirtt/libvirt-sock"
     sleep ${timeout}
 elif [ "${action}" == "dump" ]; then
     sleep ${timeout}
     ${_exec} mkdir -p /var/run/kubevirt/dumps/${namespace}_${vm}/
+    _virsh="${_exec} virsh -c qemu+unix:///system?socket=/var/run/libvirtt/libvirt-sock"
     if [ "${mode}" == "memory" ]; then
         ${_virsh} dump ${namespace}_${vm} /var/run/kubevirt/dumps/${namespace}_${vm}/${namespace}_${vm}-${timestamp}.memory.dump --memory-only --verbose
     elif [ "${mode}" == "full" ]; then
