@@ -57,8 +57,7 @@ while true; do
 done
 shift $(expr $OPTIND - 1 )
 
-if [[ -z "$1" || -z "$action" ]]; then
-    vm=$1
+if [ "${action}" == "help" ]; then
     echo "Usage: script <vm> [-n <namespace>]  --pause|--dump [full|memory]|--list|--copy [filename]|--unpause".
     exit 1
 fi
@@ -68,10 +67,7 @@ POD=$(${_kubectl} get pods -n ${namespace} -l kubevirt.io/created-by=${UUID} --n
 _exec="${_kubectl} exec  ${POD} -n ${namespace} -c compute --"
 _virtctl="virtctl --namespace ${namespace}"
 
-if [ "${action}" == "help" ]; then
-    echo "Usage: script <vm> [-n <namespace>]  --pause|--dump [full|memory]|--list|--copy [filename]|--unpause".
-    exit 1
-elif [ "${action}" == "pause" ]; then
+if [ "${action}" == "pause" ]; then
     ${_virtctl} pause vm ${vm}
     sleep ${timeout}
 elif [ "${action}" == "dump" ]; then
