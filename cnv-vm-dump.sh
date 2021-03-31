@@ -57,9 +57,8 @@ while true; do
 done
 shift $(expr $OPTIND - 1 )
 
-vm=$1
-
-if [[ -z "$vm" || -z "$action" ]]; then
+if [[ -z "$1" || -z "$action" ]]; then
+    vm=$1
     echo "Usage: script <vm> [-n <namespace>]  --pause|--dump [full|memory]|--list|--copy [filename]|--unpause".
     exit 1
 fi
