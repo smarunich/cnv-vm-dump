@@ -70,15 +70,15 @@ _virtctl="virtctl --namespace ${namespace}"
 
 if [ "${action}" == "pause" ]; then
     ${_virtctl} pause vm ${vm}
-    ${_exec} mkdir -p /var/run/libvirtt
-    ${_exec} sed -i 's[#unix_sock_dir = "/run/libvirt"[unix_sock_dir = "/var/run/libvirtt"[' /etc/libvirt/libvirtd.conf 
+    ${_exec} mkdir -p /var/run/libvirt
+    ${_exec} sed -i 's[#unix_sock_dir = "/run/libvirt"[unix_sock_dir = "/var/run/libvirt"[' /etc/libvirt/libvirtd.conf 
     LIBVIRT_PID=$(${_exec} bash -c 'pidof -s libvirtd')
     ${_exec} kill ${LIBVIRT_PID}
     sleep ${timeout}
 elif [ "${action}" == "dump" ]; then
     sleep ${timeout}
     ${_exec} mkdir -p /var/run/kubevirt/dumps/${namespace}_${vm}/
-    _virsh="${_exec} virsh -c qemu+unix:///system?socket=/var/run/libvirtt/libvirt-sock"
+    _virsh="${_exec} virsh -c qemu+unix:///system?socket=/var/run/libvirt/libvirt-sock"
     if [ "${mode}" == "memory" ]; then
         ${_virsh} dump ${namespace}_${vm} /var/run/kubevirt/dumps/${namespace}_${vm}/${namespace}_${vm}-${timestamp}.memory.dump --memory-only --verbose
     elif [ "${mode}" == "full" ]; then
@@ -89,11 +89,11 @@ elif [ "${action}" == "list" ]; then
 elif [ "${action}" == "copy" ]; then
     ${_kubectl} cp ${POD}:/var/run/kubevirt/dumps/${namespace}_${vm}/${filename} ${filename}
 elif [ "${action}" == "unpause" ]; then
-    ${_exec} sed -i 's[unix_sock_dir = "/var/run/libvirtt"[#unix_sock_dir = "/var/run/libvirt"[' /etc/libvirt/libvirtd.conf
+    ${_exec} sed -i 's[unix_sock_dir = "/var/run/libvirt"[#unix_sock_dir = "/var/run/libvirt"[' /etc/libvirt/libvirtd.conf
     LIBVIRT_PID=$(${_exec} bash -c 'pidof -s libvirtd')
     ${_exec} kill ${LIBVIRT_PID}
     _virsh="${_exec} virsh" 
-    ${_exec} rm -rf /var/run/libvirtt
+    ${_exec} rm -rf /var/run/libvirt
     sleep ${timeout}
     ${_virtctl} unpause vm ${vm}
 fi
