@@ -90,7 +90,8 @@ elif [ "${action}" == "dump" ]; then
         if [ "${dump_mode}" == "memory" ]; then
             ${_virsh} snapshot-create-as ${namespace}_${vm} --memspec file=/var/run/kubevirt/external/${namespace}_${vm}/${namespace}_${vm}-${timestamp}.memory.snapshot
         elif [ "${dump_mode}" == "full" ]; then
-            ${_virsh} snapshot-create-as ${namespace}_${vm} --memspec file=/var/run/kubevirt/external/${namespace}_${vm}/${namespace}_${vm}-${timestamp}.memory.snapshot --diskspec vda,file=/var/run/kubevirt/external/${namespace}_${vm}/${namespace}_${vm}-${timestamp}.disk.snapshot
+            echo "NOT SUPPORTED ON PAUSED WORKLOAD"
+            #${_virsh} snapshot-create-as ${namespace}_${vm} --memspec file=/var/run/kubevirt/external/${namespace}_${vm}/${namespace}_${vm}-${timestamp}.memory.snapshot --diskspec vda,file=/var/run/kubevirt/external/${namespace}_${vm}/${namespace}_${vm}-${timestamp}.disk.snapshot
         fi
     elif  [ "${capture_mode}" == "dump" ]; then
         if [ "${dump_mode}" == "memory" ]; then
