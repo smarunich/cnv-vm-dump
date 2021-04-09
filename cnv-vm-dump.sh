@@ -11,13 +11,13 @@ _kubectl="${KUBECTL_BINARY:-oc}"
 timeout=10
 timestamp=$(date +%Y%m%d-%H%M%S)
 
-options=$(getopt -o n:,h --long help,pause,dump:,list,copy:,virsh:,:unpause -- "$@")
+options=$(getopt -o n:,h --long help,pause,dump:,list,copy:,capture_mode:,:unpause -- "$@")
 [ $? -eq 0 ] || {
     echo "Incorrect options provided"
     exit 1
 }
 
-virsh_mode="dump"
+capture_mode="dump"
 
 eval set -- "$options"
 while true; do
@@ -30,9 +30,9 @@ while true; do
         shift;
         dump_mode=$1
         ;;
-    --virsh)
+    --capture_mode)
         shift;
-        virsh_mode=$1
+        capture_mode=$1
         ;;
     --copy)
         action="copy"
@@ -65,7 +65,7 @@ done
 shift $(expr $OPTIND - 1 )
 
 if [ "${action}" == "help" ]; then
-    echo "Usage: script <vm> [-n <namespace>]  --pause|--dump [full|memory]|--virsh [dump|snapshot]|--list|--copy [filename]|--unpause"
+    echo "Usage: script <vm> [-n <namespace>]  --pause|--dump [full|memory]|--capture [dump|snapshot]|--list|--copy [filename]|--unpause"
     exit 1
 fi
 
@@ -86,13 +86,13 @@ elif [ "${action}" == "dump" ]; then
     sleep ${timeout}
     ${_exec} mkdir -p /var/run/kubevirt/external/${namespace}_${vm}/
     _virsh="${_exec} virsh -c qemu+unix:///system?socket=/var/run/libvirt/libvirt-sock"
-    if [ "${virsh_mode}" == "snapshot" ]; then
+    if [ "${capture_mode}" == "snapshot" ]; then
         if [ "${dump_mode}" == "memory" ]; then
             ${_virsh} snapshot-create-as ${namespace}_${vm} --memspec file=/var/run/kubevirt/external/${namespace}_${vm}/${namespace}_${vm}-${timestamp}.memory.snapshot
         elif [ "${dump_mode}" == "full" ]; then
-            ${_virsh} snapshot-create-as ${namespace}_${vm} --memspec file=/var/run/kubevirt/external/${namespace}_${vm}/${namespace}_${vm}-${timestamp}.memory.snapshot --diskspec file=/var/run/kubevirt/external/${namespace}_${vm}/${namespace}_${vm}-${timestamp}.disk.snapshot
+            ${_virsh} snapshot-create-as ${namespace}_${vm} --memspec file=/var/run/kubevirt/external/${namespace}_${vm}/${namespace}_${vm}-${timestamp}.memory.snapshot --diskspec vda,file=/var/run/kubevirt/external/${namespace}_${vm}/${namespace}_${vm}-${timestamp}.disk.snapshot
         fi
-    else
+    elif  [ "${capture_mode}" == "dump" ]; then
         if [ "${dump_mode}" == "memory" ]; then
             ${_virsh} dump ${namespace}_${vm} /var/run/kubevirt/external/${namespace}_${vm}/${namespace}_${vm}-${timestamp}.memory.dump --memory-only --verbose
         elif [ "${dump_mode}" == "full" ]; then
