@@ -11,7 +11,7 @@ _kubectl="${KUBECTL_BINARY:-oc}"
 timeout=10
 timestamp=$(date +%Y%m%d-%H%M%S)
 
-options=$(getopt -o n:,h --long help,pause,dump:,list,copy:,capture_mode:,:unpause -- "$@")
+options=$(getopt -o n:,h --long help,pause,dump:,list,copy:,capture_mode:,unpause -- "$@")
 [ $? -eq 0 ] || {
     echo "Incorrect options provided"
     exit 1
