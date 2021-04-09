@@ -20,19 +20,29 @@ smarunich-cnv-win10-0   46m   Running   10.128.0.1   worker-0.redhat.com
 [root@bastion cnv-vm-dump]# ./cnv-vm-dump.sh -n smarunich-cnv smarunich-cnv-win10-0 --pause
 VMI smarunich-cnv-win10-1 was scheduled to pause
 ```
-### Step 2 - Perform the target VM dump
+### Step 2 - Option A using virsh dump - Perform the target VM dump (Default)
 There are two options available:
 * full - to perform complete VM dump (to include memory)
 * memory - to perform memory VM dump only
 ```
-[root@bastion cnv-vm-dump]#  ./cnv-vm-dump.sh -n smarunich-cnv smarunich-cnv-win10-0 --dump memory
+[root@bastion cnv-vm-dump]#  ./cnv-vm-dump.sh -n smarunich-cnv smarunich-cnv-win10-0 --dump memory --capture_mode dump
 Dump: [100 %]
-Domain smarunich-cnv_smarunich-cnv-win10-0 dumped to /var/run/kubevirt/dumps/smarunich-cnv_smarunich-cnv-win10-0/smarunich-cnv_smarunich-cnv-win10-0-20210331-145428.memory.dump
+Domain smarunich-cnv_smarunich-cnv-win10-0 dumped to /var/run/kubevirt/external/smarunich-cnv_smarunich-cnv-win10-0/smarunich-cnv_smarunich-cnv-win10-0-20210331-145428.memory.dump
+```
+### Step 2 - Option B using virsh snapshot - Perform the target VM snapshot
+There are two options available:
+* full - to perform complete VM dump (to include memory) *** NOT SUPPORTED *** 
+* memory - to perform memory VM dump only
+```
+[root@bastion cnv-vm-dump]#  ./cnv-vm-dump.sh -n smarunich-cnv smarunich-cnv-win10-0 --dump memory --capture_mode snapshot
+Dump: [100 %]
+Domain smarunich-cnv_smarunich-cnv-win10-0 dumped to /var/run/kubevirt/external/smarunich-cnv_smarunich-cnv-win10-0/smarunich-cnv_smarunich-cnv-win10-0-20210331-145428.memory.snapshot
 ```
 ### Step 3 - List available VM dumps for copy
 ```
 [root@bastion cnv-vm-dump]#  ./cnv-vm-dump.sh -n smarunich-cnv smarunich-cnv-win10-0 --list
 smarunich-cnv_smarunich-cnv-win10-0-20210331-145428.memory.dump
+smarunich-cnv_smarunich-cnv-win10-0-20210331-145428.memory.snapshot
 ```
 ### Step 4 - Copy the target VM dump
 ```

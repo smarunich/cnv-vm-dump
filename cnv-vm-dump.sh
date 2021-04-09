@@ -11,11 +11,14 @@ _kubectl="${KUBECTL_BINARY:-oc}"
 timeout=10
 timestamp=$(date +%Y%m%d-%H%M%S)
 
-options=$(getopt -o n:,h --long help,pause,dump:,list,copy:,unpause -- "$@")
+options=$(getopt -o n:,h --long help,pause,dump:,list,copy:,capture_mode:,unpause -- "$@")
 [ $? -eq 0 ] || {
     echo "Incorrect options provided"
     exit 1
 }
+
+capture_mode="dump"
+
 eval set -- "$options"
 while true; do
     case "$1" in
@@ -25,7 +28,11 @@ while true; do
     --dump)
         action="dump"
         shift;
-        mode=$1
+        dump_mode=$1
+        ;;
+    --capture_mode)
+        shift;
+        capture_mode=$1
         ;;
     --copy)
         action="copy"
@@ -58,7 +65,7 @@ done
 shift $(expr $OPTIND - 1 )
 
 if [ "${action}" == "help" ]; then
-    echo "Usage: script <vm> [-n <namespace>]  --pause|--dump [full|memory]|--list|--copy [filename]|--unpause"
+    echo "Usage: script <vm> [-n <namespace>]  --pause|--dump [full|memory]|--capture_mode [dump|snapshot]|--list|--copy [filename]|--unpause"
     exit 1
 fi
 
@@ -77,23 +84,32 @@ if [ "${action}" == "pause" ]; then
     sleep ${timeout}
 elif [ "${action}" == "dump" ]; then
     sleep ${timeout}
-    ${_exec} mkdir -p /var/run/kubevirt/dumps/${namespace}_${vm}/
+    ${_exec} mkdir -p /var/run/kubevirt/external/${namespace}_${vm}/
     _virsh="${_exec} virsh -c qemu+unix:///system?socket=/var/run/libvirt/libvirt-sock"
-    if [ "${mode}" == "memory" ]; then
-        ${_virsh} dump ${namespace}_${vm} /var/run/kubevirt/dumps/${namespace}_${vm}/${namespace}_${vm}-${timestamp}.memory.dump --memory-only --verbose
-    elif [ "${mode}" == "full" ]; then
-        ${_virsh} dump ${namespace}_${vm} /var/run/kubevirt/dumps/${namespace}_${vm}/${namespace}_${vm}-${timestamp}.full.dump --verbose
+    if [ "${capture_mode}" == "snapshot" ]; then
+        if [ "${dump_mode}" == "memory" ]; then
+            ${_virsh} snapshot-create-as ${namespace}_${vm} --memspec file=/var/run/kubevirt/external/${namespace}_${vm}/${namespace}_${vm}-${timestamp}.memory.snapshot
+        elif [ "${dump_mode}" == "full" ]; then
+            echo "NOT SUPPORTED ON PAUSED WORKLOAD"
+            #${_virsh} snapshot-create-as ${namespace}_${vm} --memspec file=/var/run/kubevirt/external/${namespace}_${vm}/${namespace}_${vm}-${timestamp}.memory.snapshot --diskspec vda,file=/var/run/kubevirt/external/${namespace}_${vm}/${namespace}_${vm}-${timestamp}.disk.snapshot
+        fi
+    elif  [ "${capture_mode}" == "dump" ]; then
+        if [ "${dump_mode}" == "memory" ]; then
+            ${_virsh} dump ${namespace}_${vm} /var/run/kubevirt/external/${namespace}_${vm}/${namespace}_${vm}-${timestamp}.memory.dump --memory-only --verbose
+        elif [ "${dump_mode}" == "full" ]; then
+            ${_virsh} dump ${namespace}_${vm} /var/run/kubevirt/external/${namespace}_${vm}/${namespace}_${vm}-${timestamp}.full.dump --verbose
+        fi
     fi
 elif [ "${action}" == "list" ]; then
-     ${_exec} ls /var/run/kubevirt/dumps/${namespace}_${vm}/
+     ${_exec} ls /var/run/kubevirt/external/${namespace}_${vm}/
 elif [ "${action}" == "copy" ]; then
-    ${_kubectl} cp ${POD}:/var/run/kubevirt/dumps/${namespace}_${vm}/${filename} ${filename}
+    ${_kubectl} cp ${POD}:/var/run/kubevirt/external/${namespace}_${vm}/${filename} ${filename}
 elif [ "${action}" == "unpause" ]; then
     ${_exec} sed -i 's[unix_sock_dir = "/var/run/libvirt"[#unix_sock_dir = "/var/run/libvirt"[' /etc/libvirt/libvirtd.conf
     LIBVIRT_PID=$(${_exec} bash -c 'pidof -s libvirtd')
     ${_exec} kill ${LIBVIRT_PID}
     _virsh="${_exec} virsh" 
-    ${_exec} rm -rf /var/run/libvirt
+    ${_exec} rm -rf /var/run/libvirt/*
     sleep ${timeout}
     ${_virtctl} unpause vm ${vm}
 fi
