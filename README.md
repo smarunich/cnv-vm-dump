@@ -5,6 +5,11 @@ Utility to perform "virsh dump" for Openshift CNV guest workloads. It creates a 
 Usage: script <vm> [-n <namespace>]  --pause|--dump [full|memory]|--list|--copy [filename]|--unpause
 ```
 
+## Requirements
+
+- oc
+- virtctl
+
 ## HowTo
 
 ### Step 1 - Pause the target VM within the defined namespace
