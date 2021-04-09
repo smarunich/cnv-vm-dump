@@ -29,7 +29,7 @@ There are two options available:
 Dump: [100 %]
 Domain smarunich-cnv_smarunich-cnv-win10-0 dumped to /var/run/kubevirt/external/smarunich-cnv_smarunich-cnv-win10-0/smarunich-cnv_smarunich-cnv-win10-0-20210331-145428.memory.dump
 ```
-### Step 2 - Option B using virsh snapshot - Perform the target VM dump (Default)
+### Step 2 - Option B using virsh snapshot - Perform the target VM snapshot
 There are two options available:
 * full - to perform complete VM dump (to include memory) *** NOT SUPPORTED *** 
 * memory - to perform memory VM dump only
