@@ -1,4 +1,4 @@
-#!/bin/bash -x
+#!/bin/bash
 set -euo pipefail
 
 RED='\e[31m'
@@ -109,7 +109,7 @@ elif [ "${action}" == "unpause" ]; then
     LIBVIRT_PID=$(${_exec} bash -c 'pidof -s libvirtd')
     ${_exec} kill ${LIBVIRT_PID}
     _virsh="${_exec} virsh" 
-    ${_exec} rm -rf /var/run/libvirt
+    ${_exec} rm -rf /var/run/libvirt/*
     sleep ${timeout}
     ${_virtctl} unpause vm ${vm}
 fi
