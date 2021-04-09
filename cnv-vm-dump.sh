@@ -66,7 +66,7 @@ done
 shift $(expr $OPTIND - 1 )
 
 if [ "${action}" == "help" ]; then
-    echo "Usage: script <vm> [-n <namespace>]  --pause|--dump [full|memory]|--list|--copy [filename]|--unpause"
+    echo "Usage: script <vm> [-n <namespace>]  --pause|--dump [full|memory]|--virsh [dump|snapshot]|--list|--copy [filename]|--unpause"
     exit 1
 fi
 
