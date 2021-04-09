@@ -31,7 +31,6 @@ while true; do
         dump_mode=$1
         ;;
     --virsh)
-        action="virsh"
         shift;
         virsh_mode=$1
         ;;
