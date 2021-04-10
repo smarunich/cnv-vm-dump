@@ -2,7 +2,7 @@
 Utility to perform "virsh dump" for Openshift CNV guest workloads. It creates a dump file containing the core of the guest virtual machine so that it can be analyzed, for example by the crash utility.
 ```
 [root@bastion cnv-vm-dump]# ./cnv-vm-dump.sh --help
-Usage: script <vm> [-n <namespace>]  --pause|--dump [full|memory]|--list|--copy [filename]|--unpause
+Usage: script <vm> [-n <namespace>]  --pause|--dump [full|memory]|--capture_mode [dump|snapshot]|--list|--copy [filename]|--unpause
 ```
 
 ## Requirements
