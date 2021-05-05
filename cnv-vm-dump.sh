@@ -77,40 +77,30 @@ _virtctl="virtctl --namespace ${namespace}"
 
 if [ "${action}" == "pause" ]; then
     ${_virtctl} pause vm ${vm}
-    ${_exec} mkdir -p /var/run/libvirt
-    ${_exec} sed -i 's[#unix_sock_dir = "/run/libvirt"[unix_sock_dir = "/var/run/libvirt"[' /etc/libvirt/libvirtd.conf 
-    LIBVIRT_PID=$(${_exec} bash -c 'pidof -s libvirtd')
-    ${_exec} kill ${LIBVIRT_PID}
-    sleep ${timeout}
+    ${_exec} mkdir -p /opt/kubevirt
 elif [ "${action}" == "dump" ]; then
-    sleep ${timeout}
-    ${_exec} mkdir -p /var/run/kubevirt/external/${namespace}_${vm}/
-    _virsh="${_exec} virsh -c qemu+unix:///system?socket=/var/run/libvirt/libvirt-sock"
+    ${_exec} mkdir -p /opt/kubevirt/external/${namespace}_${vm}/
+    _virsh="${_exec} virsh -c qemu+unix:///system?socket=/run/libvirt/libvirt-sock"
     if [ "${capture_mode}" == "snapshot" ]; then
         if [ "${dump_mode}" == "memory" ]; then
-            ${_virsh} snapshot-create-as ${namespace}_${vm} --memspec file=/var/run/kubevirt/external/${namespace}_${vm}/${namespace}_${vm}-${timestamp}.memory.snapshot
+            ${_virsh} snapshot-create-as ${namespace}_${vm} --memspec file=/opt/kubevirt/external/${namespace}_${vm}/${namespace}_${vm}-${timestamp}.memory.snapshot
         elif [ "${dump_mode}" == "full" ]; then
             echo "NOT SUPPORTED ON PAUSED WORKLOAD"
-            #${_virsh} snapshot-create-as ${namespace}_${vm} --memspec file=/var/run/kubevirt/external/${namespace}_${vm}/${namespace}_${vm}-${timestamp}.memory.snapshot --diskspec vda,file=/var/run/kubevirt/external/${namespace}_${vm}/${namespace}_${vm}-${timestamp}.disk.snapshot
+            #${_virsh} snapshot-create-as ${namespace}_${vm} --memspec file=/opt/kubevirt/external/${namespace}_${vm}/${namespace}_${vm}-${timestamp}.memory.snapshot --diskspec vda,file=/opt/kubevirt/external/${namespace}_${vm}/${namespace}_${vm}-${timestamp}.disk.snapshot
         fi
     elif  [ "${capture_mode}" == "dump" ]; then
         if [ "${dump_mode}" == "memory" ]; then
-            ${_virsh} dump ${namespace}_${vm} /var/run/kubevirt/external/${namespace}_${vm}/${namespace}_${vm}-${timestamp}.memory.dump --memory-only --verbose
+            ${_virsh} dump ${namespace}_${vm} /opt/kubevirt/external/${namespace}_${vm}/${namespace}_${vm}-${timestamp}.memory.dump --memory-only --verbose
         elif [ "${dump_mode}" == "full" ]; then
-            ${_virsh} dump ${namespace}_${vm} /var/run/kubevirt/external/${namespace}_${vm}/${namespace}_${vm}-${timestamp}.full.dump --verbose
+            ${_virsh} dump ${namespace}_${vm} /opt/kubevirt/external/${namespace}_${vm}/${namespace}_${vm}-${timestamp}.full.dump --verbose
         fi
     fi
 elif [ "${action}" == "list" ]; then
-     ${_exec} ls /var/run/kubevirt/external/${namespace}_${vm}/
+     ${_exec} ls /opt/kubevirt/external/${namespace}_${vm}/
 elif [ "${action}" == "copy" ]; then
-    ${_kubectl} cp ${POD}:/var/run/kubevirt/external/${namespace}_${vm}/${filename} ${filename}
+    ${_kubectl} cp ${POD}:/opt/kubevirt/external/${namespace}_${vm}/${filename} ${filename}
 elif [ "${action}" == "unpause" ]; then
-    ${_exec} sed -i 's[unix_sock_dir = "/var/run/libvirt"[#unix_sock_dir = "/var/run/libvirt"[' /etc/libvirt/libvirtd.conf
-    LIBVIRT_PID=$(${_exec} bash -c 'pidof -s libvirtd')
-    ${_exec} kill ${LIBVIRT_PID}
-    _virsh="${_exec} virsh" 
-    ${_exec} rm -rf /var/run/libvirt/*
-    sleep ${timeout}
+    ${_exec} rm -rf /opt/kubevirt/*
     ${_virtctl} unpause vm ${vm}
 fi
 
