@@ -96,9 +96,9 @@ elif [ "${action}" == "dump" ]; then
         fi
     fi
 elif [ "${action}" == "list" ]; then
-     ${_exec} ls -lah /opt/kubevirt/external/${namespace}_${vm}/
+    ${_exec} ls -lah /opt/kubevirt/external/${namespace}_${vm}/
 elif [ "${action}" == "copy" ]; then
-    ${_kubectl} cp  -n ${namespace} ${POD}:/opt/kubevirt/external/${namespace}_${vm}/${filename} ${filename}
+    ${_exec} cat /opt/kubevirt/external/${namespace}_${vm}/${filename} > ${filename}
 elif [ "${action}" == "unpause" ]; then
     ${_exec} rm -rf /opt/kubevirt/*
     ${_virtctl} unpause vm ${vm}
