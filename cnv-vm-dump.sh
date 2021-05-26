@@ -100,7 +100,7 @@ elif [ "${action}" == "list" ]; then
 elif [ "${action}" == "copy" ]; then
     ${_exec} cat /opt/kubevirt/external/${namespace}_${vm}/${filename} > ${filename}
 elif [ "${action}" == "unpause" ]; then
-    ${_exec} rm -rf /opt/kubevirt/*
+    ${_exec} bash -c "rm -rf /opt/kubevirt/*"
     ${_virtctl} unpause vm ${vm}
 fi
 
