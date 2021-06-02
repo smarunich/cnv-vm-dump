@@ -65,7 +65,7 @@ done
 shift $(expr $OPTIND - 1 )
 
 if [ "${action}" == "help" ]; then
-    echo "Usage: script <vm> [-n <namespace>]  --pause|--dump [full|memory]|--capture_mode [dump|snapshot]|--list|--copy [filename]|--unpause"
+    echo "Usage: script <vm> [-n <namespace>]  --pause|--dump [core|memory|disk]|--capture_mode [dump|snapshot]|--list|--copy [filename]|--unpause"
     exit 1
 fi
 
@@ -81,18 +81,16 @@ if [ "${action}" == "pause" ]; then
 elif [ "${action}" == "dump" ]; then
     ${_exec} mkdir -p /opt/kubevirt/external/${namespace}_${vm}/
     _virsh="${_exec} virsh -c qemu+unix:///system?socket=/run/libvirt/libvirt-sock"
-    if [ "${capture_mode}" == "snapshot" ]; then
-        if [ "${dump_mode}" == "memory" ]; then
-            ${_virsh} snapshot-create-as ${namespace}_${vm} --memspec file=/opt/kubevirt/external/${namespace}_${vm}/${namespace}_${vm}-${timestamp}.memory.snapshot
-        elif [ "${dump_mode}" == "full" ]; then
-            echo "NOT SUPPORTED ON PAUSED WORKLOAD"
-            #${_virsh} snapshot-create-as ${namespace}_${vm} --memspec file=/opt/kubevirt/external/${namespace}_${vm}/${namespace}_${vm}-${timestamp}.memory.snapshot --diskspec vda,file=/opt/kubevirt/external/${namespace}_${vm}/${namespace}_${vm}-${timestamp}.disk.snapshot
-        fi
-    elif  [ "${capture_mode}" == "dump" ]; then
+    if  [ "${capture_mode}" == "dump" ]; then
         if [ "${dump_mode}" == "memory" ]; then
             ${_virsh} dump ${namespace}_${vm} /opt/kubevirt/external/${namespace}_${vm}/${namespace}_${vm}-${timestamp}.memory.dump --memory-only --verbose
-        elif [ "${dump_mode}" == "full" ]; then
-            ${_virsh} dump ${namespace}_${vm} /opt/kubevirt/external/${namespace}_${vm}/${namespace}_${vm}-${timestamp}.full.dump --verbose
+            echo "Memory export is in progress..."
+            ${_exec} cat /opt/kubevirt/external/${namespace}_${vm}/${namespace}_${vm}-${timestamp}.memory.dump > ${namespace}_${vm}-${timestamp}.memory.dump
+        elif [ "${dump_mode}" == "core" ]; then
+            ${_virsh} dump ${namespace}_${vm} /opt/kubevirt/external/${namespace}_${vm}/${namespace}_${vm}-${timestamp}.core.dump --verbose
+        elif [ "${dump_mode}" == "disk" ]; then
+            echo "Disk export is in progress..."
+            ${_exec} cat /dev/${vm} > ${namespace}_${vm}-${timestamp}.disk.dump
         fi
     fi
 elif [ "${action}" == "list" ]; then
